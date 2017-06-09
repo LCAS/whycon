@@ -14,8 +14,11 @@
 //-----These parameters need to be adjusted by the user -----------------------
 
 //Adjust camera resolution here
-int  imageWidth= 960;
-int  imageHeight = 720;
+int  imageWidth= 1600;
+int  imageHeight = 1200;
+
+//int  imageWidth= 800;
+//int  imageHeight = 600;
 
 //Adjust the black circle diameter [m] 
 float circleDiameter = 0.122;
@@ -30,9 +33,9 @@ int  screenWidth= 1920;
 int  screenHeight = 1080;
 
 /*robot detection variables*/
-int numBots = 0;		//num of robots to track
-int numFound = 0;		//num of robots detected in the last step
-int numStatic = 0;		//num of non-moving robots  
+int numBots = 0;				//num of robots to track
+int numFound = 0;				//num of robots detected in the last step
+int numStatic = 0;				//num of non-moving robots  
 CCircleDetect *detectorArray[MAX_PATTERNS];	//detector array (each pattern has its own detector)
 SSegment currentSegmentArray[MAX_PATTERNS];	//segment array (detected objects in image space)
 SSegment lastSegmentArray[MAX_PATTERNS];	//segment position in the last step (allows for tracking)
@@ -40,8 +43,8 @@ STrackedObject objectArray[MAX_PATTERNS];	//object array (detected objects in me
 CTransformation *trans;				//allows to transform from image to metric coordinates
 
 /*variables related to (auto) calibration*/
-const int calibrationSteps = 20;			//how many measurements to average to estimate calibration pattern position (manual calib)
-const int autoCalibrationSteps = 30; 			//how many measurements to average to estimate calibration pattern position (automatic calib)  
+const int calibrationSteps = 20;		//how many measurements to average to estimate calibration pattern position (manual calib)
+const int autoCalibrationSteps = 30; 		//how many measurements to average to estimate calibration pattern position (automatic calib)  
 const int autoCalibrationPreSteps = 10;		//how many measurements to discard before starting to actually auto-calibrating (automatic calib)  
 int calibNum = 5;				//number of objects acquired for calibration (5 means calibration winished inactive)
 STrackedObject calib[5];			//array to store calibration patterns positions
@@ -52,11 +55,11 @@ ETransformType lastTransformType = TRANSFORM_2D;//pre-calibration transform (use
 int wasBots = 1;				//pre-calibration number of robots to track (used to preserve pre-calibation number of robots to track)
 
 /*program flow control*/
-bool saveVideo = true;		//save video to output folder?
-bool saveLog = true;		//save log to output folder?
-bool stop = false;		//stop and exit ?
-int moveVal = 1;		//how many frames to process ?
-int moveOne = moveVal;		//how many frames to process now (setting moveOne to 0 or lower freezes the video stream) 
+bool saveVideo = true;				//save video to output folder?
+bool saveLog = true;				//save log to output folder?
+bool stop = false;				//stop and exit ?
+int moveVal = 1;				//how many frames to process ?
+int moveOne = moveVal;				//how many frames to process now (setting moveOne to 0 or lower freezes the video stream) 
 
 /*GUI-related stuff*/
 CGui* gui;			//drawing, events capture
@@ -237,6 +240,12 @@ void processKeys()
 			detectorArray[i]->debug = 10-detectorArray[i]->debug;
 		}
 	}
+	if (keys[SDLK_i] && lastKeys[SDLK_i] == false) 
+	{ 
+		for (int i = 0;i<numBots;i++){
+			detectorArray[i]->identify = detectorArray[i]->identify==false;
+		}
+	}
 
 	//transformations to use - in our case, the relevant transform is '2D'
 	if (keys[SDLK_1] && lastKeys[SDLK_1] == false) trans->transformType = TRANSFORM_NONE;
@@ -299,7 +308,7 @@ int main(int argc,char* argv[])
 	camera->loadConfig("../etc/camera.cfg");
 
 	//determine gui size so that it fits the screen
-	while (imageHeight/guiScale > screenHeight || imageHeight/guiScale > screenWidth) guiScale = guiScale*2;
+	//while (imageHeight/guiScale > screenHeight || imageHeight/guiScale > screenWidth) guiScale = guiScale*2;
 
 	//initialize GUI, image structures, coordinate transformation modules
 	if (useGui) gui = new CGui(imageWidth,imageHeight,guiScale);
@@ -382,7 +391,7 @@ int main(int argc,char* argv[])
 
 		
 		for (int i = 0;i<numBots;i++){
-			//if (currentSegmentArray[i].valid) printf("Object %i %03f %03f %03f %03f %03f\n",i,objectArray[i].x,objectArray[i].y,objectArray[i].z,objectArray[i].error,objectArray[i].esterror);
+			if (currentSegmentArray[i].valid) printf("Object %i %03f %03f %03f %03f\n",objectArray[i].ID,objectArray[i].x,objectArray[i].y,objectArray[i].z,objectArray[i].yaw);
 		}
 
 		if (camera->cameraType == CT_WEBCAM){
