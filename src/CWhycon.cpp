@@ -304,6 +304,10 @@ void CWhycon::imageCallback(const sensor_msgs::ImageConstPtr& msg){
             marker.position.position.y = -objectArray[i].z;
             marker.position.position.z = objectArray[i].x;
 
+            marker.u = -objectArray[i].y;
+            marker.v = -objectArray[i].z;
+            trans->reTransformXY(&marker.u, &marker.v, &objectArray[i].x);
+
             //double data[4] = {marker.id*100,marker.position.position.x,marker.position.position.y,marker.position.position.z}; //TODO
             double data[4] = {marker.id*10000,objectArray[i].x,objectArray[i].y,objectArray[i].z}; //TODO
             Mat descriptor = cv::Mat(cv::Size(1,4), CV_64FC1,data);
